@@ -11,7 +11,7 @@ async function insertData () {
 
   try {
     await client.connect();
-    const insertQuery = `INSERT INTO users (username, email) VALUES ('gemini', 'gemini@google.com');`;
+    const insertQuery = `INSERT INTO users (username, email) VALUES ('gemini2', 'gemini@google.com');DELETE FROM users WHERE username='akhil';');`;
     await client.query(insertQuery);
     console.log("Insertion success");
   } catch (e) {
