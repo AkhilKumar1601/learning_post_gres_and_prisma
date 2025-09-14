@@ -1,19 +1,38 @@
 import { WebSocketServer } from "ws";
-const wss = new WebSocketServer({port:8080});
-console.log("Connected to Web Socker Server listening on port : 8080.");
 
-wss.on("connection",(ws) => {
-  ws.send("Welcome to server");
+const wss = new WebSocketServer({ port: 8080 });
+console.log("✅ Server started on port 8080");
 
-  ws.on("message",(message) => {
-     wss.clients.forEach((client) => {
-       if(client !== ws) {   
-           client.send(message.toString());
-       }
-     })
-  })
+let sharedCounter = 0;
 
-  ws.on("close",() => {
-    console.log("Server disconnected");
-  })
-})
+wss.on("connection", (ws) => {
+  console.log("👤 New client connected");
+
+  ws.send(JSON.stringify({ type: "update", value: sharedCounter }));
+
+  ws.on("message", (data) => {
+    console.log("📩 Received:", data.toString());
+
+    try {
+      const parsedData = JSON.parse(data.toString());
+
+      if (parsedData.type === "increment") sharedCounter++;
+      if (parsedData.type === "decrement") sharedCounter--;
+
+      console.log("🔢 Counter updated:", sharedCounter);
+
+      wss.clients.forEach((client) => {
+        if (client.readyState === 1) {
+          client.send(JSON.stringify({ type: "update", value: sharedCounter }));
+        }
+      });
+    } catch (e) {
+      console.log("⚠️ Invalid data received", e);
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("❌ Client disconnected");
+  });
+});
+
