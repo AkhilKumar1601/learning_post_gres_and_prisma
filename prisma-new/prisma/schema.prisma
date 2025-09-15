@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Author {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  // Relations
+  posts     Post[]
+  comments  Comment[] // optional: if you allow authors to leave comments
+}
+
+model Post {
+  id          Int       @id @default(autoincrement())
+  title       String
+  content     String
+  publishedAt DateTime  @default(now())
+  authorId    Int
+
+  // Relations
+  author      Author    @relation(fields: [authorId], references: [id])
+  comments    Comment[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  postId    Int
+  authorId  Int?     // optional: if comments can be anonymous
+
+  // Relations
+  post   Post   @relation(fields: [postId], references: [id])
+  author Author? @relation(fields: [authorId], references: [id]) // optional
+}
